@@ -109,9 +109,9 @@ public class MultiThreadedServer {
 				try {
 					LOG.info("Reading until client sends BYE or closes the connection...");
 					out.println("What computation do you want ?");
+					out.flush();
 					while ((shouldRun) && (line = in.readLine()) != null) {
 						//ecrire ici le code pour lire le message
-						
 						if (line.equalsIgnoreCase("bye")) {
 							shouldRun = false;
 							continue;
@@ -120,12 +120,13 @@ public class MultiThreadedServer {
 						
 						if(s.length != 3) {
 							out.println("Seule le format X operation Y autorisé");
+							out.println("\nWhat computation do you want ?");
 							out.flush();
 							continue;
 						}
 						
-						double first = Double.parseDouble(s[0]);
-						double second = Double.parseDouble(s[2]);
+						int first = Integer.parseInt(s[0]);
+						int second = Integer.parseInt(s[2]);
 						
 						switch(s[1]) {
 						case "+":
@@ -148,6 +149,7 @@ public class MultiThreadedServer {
 						//for(String string : s)
 						//	out.println("> " + string.toUpperCase());
 						//LOG.info("> " + s.toUpperCase());
+						out.println("\nWhat computation do you want ?");
 						out.flush();
 					}
 
