@@ -122,9 +122,6 @@ public class MultiThreadedServer {
 						}
 						
 						line = line.replace(" ", "");
-						line = line.replace("\\S", "");
-						
-						LOG.info(line);
 						
 				        String[] strNumber = line.split("[/*+-]"); 
 				        String[] strOperation = line.split("[0-9]");
