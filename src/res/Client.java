@@ -72,46 +72,30 @@ public class Client {
             return;
         }
 
-        // Let us start a thread, so that we can listen for server notifications
-        new Thread(new NotificationListener()).start();
-
-        // send Hello command
-        out.println("Hello");
-
-        DataInputStream is = null;
-        DataOutputStream os = null;
-
         Scanner scanner = new Scanner(System.in);
 
-        try {
-            is = new DataInputStream(clientSocket.getInputStream());
-            os = new DataOutputStream(clientSocket.getOutputStream());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        String notification;
+
+        // Let us start a thread, so that we can listen for server notifications
+        new Thread(new NotificationListener()).start();
 
         while(true) {
             String calcul = scanner.nextLine();
 
-            if(calcul == "Exit") {
+            if(calcul == "bye") {
                 disconnect();
                 break;
             }
 
-            try {
-                os.writeUTF(calcul);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            out.println(calcul);
+            out.flush();
         }
-
-        out.flush();
     }
 
     public void disconnect() {
         LOG.log(Level.INFO, "{0} has requested to be disconnected.", userName);
         connected = false;
-        out.println("Exit");
+        out.println("bye");
         cleanup();
     }
 

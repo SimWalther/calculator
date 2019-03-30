@@ -9,8 +9,6 @@ import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.sun.xml.internal.ws.api.streaming.XMLStreamReaderFactory.Default;
-
 /**
  * This class implements a multi-threaded TCP server. It is able to interact
  * with several clients at the time, as well as to continue listening for
@@ -120,7 +118,7 @@ public class MultiThreadedServer {
 							shouldRun = false;
 							continue;
 						}
-						
+
 						line = line.replace(" ", "");
 						
 				        String[] strNumber = line.split("[/*+-]"); 
