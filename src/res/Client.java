@@ -1,66 +1,139 @@
 package res;
 
-import java.io.ByteArrayOutputStream;
+import java.io.*;
+import java.net.Socket;
+import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * This class implements a simple client for our custom presence protocol.
+ * When the client connects to a server, a thread is started to listen for
+ * notifications sent by the server.
+ *
+ * @author Olivier Liechti
+ */
 public class Client {
-    static final Logger LOG = Logger.getLogger(Client.class.getName());
 
-    final static int BUFFER_SIZE = 1024;
-    final static String ip = "10.192.106.182";
-    final static int port = 2323;
+    final static Logger LOG = Logger.getLogger(Client.class.getName());
+
+    Socket clientSocket;
+    BufferedReader in;
+    PrintWriter out;
+    boolean connected = false;
+    String userName;
 
     /**
-     * This method does the whole processing
+     * This inner class implements the Runnable interface, so that the run()
+     * method can execute on its own thread. This method reads data sent from the
+     * server, line by line, until the connection is closed or lost.
      */
-    public void sendWrongHttpRequest() {
-        Socket clientSocket = null;
-        OutputStream os = null;
-        InputStream is = null;
+    class NotificationListener implements Runnable {
+
+        @Override
+        public void run() {
+            String notification;
+
+            try {
+                while ((connected && (notification = in.readLine()) != null)) {
+                    LOG.log(Level.INFO, "{0}", notification);
+                }
+            } catch (IOException e) {
+                LOG.log(Level.SEVERE, "Connection problem : {0}", e.getMessage());
+                connected = false;
+            } finally {
+                cleanup();
+            }
+        }
+    }
+
+    /**
+     * This method is used to connect to the server and to inform the server that
+     * the user "behind" the client has a name (in other words, the HELLO command
+     * is issued after successful connection).
+     *
+     * @param serverAddress the IP address used by the Presence Server
+     * @param serverPort the port used by the Presence Server
+     */
+    public void connect(String serverAddress, int serverPort) {
+        try {
+            clientSocket = new Socket(serverAddress, serverPort);
+            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            out = new PrintWriter(clientSocket.getOutputStream());
+            connected = true;
+        } catch (IOException e) {
+            LOG.log(Level.SEVERE, "Unable to connect to server: {0}", e.getMessage());
+            cleanup();
+            return;
+        }
+
+        // Let us start a thread, so that we can listen for server notifications
+        new Thread(new NotificationListener()).start();
+
+        // send Hello command
+        out.println("Hello");
+
+        DataInputStream is = null;
+        DataOutputStream os = null;
+
+        Scanner scanner = new Scanner(System.in);
 
         try {
-            clientSocket = new Socket(ip, port);
-            os = clientSocket.getOutputStream();
-            is = clientSocket.getInputStream();
+            is = new DataInputStream(clientSocket.getInputStream());
+            os = new DataOutputStream(clientSocket.getOutputStream());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-            String initialMessage = "Hello\r\n\r\n";
+        while(true) {
+            String calcul = scanner.nextLine();
 
-            os.write(initialMessage.getBytes());
-
-            ByteArrayOutputStream responseBuffer = new ByteArrayOutputStream();
-            byte[] buffer = new byte[BUFFER_SIZE];
-            int newBytes;
-
-            while ((newBytes = is.read(buffer)) != -1) {
-                responseBuffer.write(buffer, 0, newBytes);
+            if(calcul == "Exit") {
+                disconnect();
+                break;
             }
 
-            LOG.log(Level.INFO, "Response sent by the server: ");
-            LOG.log(Level.INFO, responseBuffer.toString());
-        } catch (IOException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-        } finally {
             try {
-                is.close();
-            } catch (IOException ex) {
-                Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            try {
-                os.close();
-            } catch (IOException ex) {
-                Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            try {
-                clientSocket.close();
-            } catch (IOException ex) {
-                Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+                os.writeUTF(calcul);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
 
+        out.flush();
+    }
+
+    public void disconnect() {
+        LOG.log(Level.INFO, "{0} has requested to be disconnected.", userName);
+        connected = false;
+        out.println("Exit");
+        cleanup();
+    }
+
+    private void cleanup() {
+        try {
+            if (in != null) {
+                in.close();
+            }
+        } catch (IOException ex) {
+            LOG.log(Level.SEVERE, ex.getMessage(), ex);
+        }
+
+        if (out != null) {
+            out.close();
+        }
+
+        try {
+            if (clientSocket != null) {
+                clientSocket.close();
+            }
+        } catch (IOException ex) {
+            LOG.log(Level.SEVERE, ex.getMessage(), ex);
+        }
     }
 }
