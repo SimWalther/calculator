@@ -98,6 +98,11 @@ public class MultiThreadedServer {
 					Logger.getLogger(MultiThreadedServer.class.getName()).log(Level.SEVERE, null, ex);
 				}
 			}
+			
+			private void beginMessage() {
+				out.println("What computation do you want ?");
+				out.flush();
+			}
 
 			@Override
 			public void run() {
@@ -108,49 +113,54 @@ public class MultiThreadedServer {
 				out.flush();
 				try {
 					LOG.info("Reading until client sends BYE or closes the connection...");
-					out.println("What computation do you want ?");
-					out.flush();
+					beginMessage();
 					while ((shouldRun) && (line = in.readLine()) != null) {
 						//ecrire ici le code pour lire le message
 						if (line.equalsIgnoreCase("bye")) {
 							shouldRun = false;
 							continue;
 						}
-						String[] s = line.split(" ");
 						
-						if(s.length != 3) {
-							out.println("Seule le format X operation Y autorisé");
-							out.println("\nWhat computation do you want ?");
-							out.flush();
+						line = line.replace(" ", "");
+						line = line.replace("\\S", "");
+						
+						LOG.info(line);
+						
+				        String[] strNumber = line.split("[/*+-]"); 
+				        String[] strOperation = line.split("[0-9]");
+						
+						if(strNumber.length != strOperation.length) {
+							out.println("Seule les nombres et les caracteres suivants sont autorise [*/+-]");
+							beginMessage();
 							continue;
 						}
 						
-						int first = Integer.parseInt(s[0]);
-						int second = Integer.parseInt(s[2]);
+						float result = Float.parseFloat(strNumber[0]);
 						
-						switch(s[1]) {
-						case "+":
-							out.println(first + " + " + second + " = " + (first+second));
-							break;
-						case "-":
-							out.println(first + " - " + second + " = " + (first-second));
-							break;
-						case "*":
-							out.println(first + " * " + second + " = " + (first*second));
-							break;
-						case "/":
-							out.println(first + " / " + second + " = " + (first/second));
-							break;
-						default:
-							out.println("Seule le format X operation Y autorisé");
-							break;
+						for(int i = 1; i < strNumber.length; ++i) {
+						
+							switch(strOperation[i]) {
+							case "+":
+								result += Float.parseFloat(strNumber[i]);
+								break;
+							case "-":
+								result -= Float.parseFloat(strNumber[i]);
+								break;
+							case "*":
+								result *= Float.parseFloat(strNumber[i]);
+								break;
+							case "/":
+								result /= Float.parseFloat(strNumber[i]);
+								break;
+							default:
+								out.println("Seule les nombres et les caracteres suivants sont autorise [*/+-]");
+								break;
+							}
 						}
 						
-						//for(String string : s)
-						//	out.println("> " + string.toUpperCase());
-						//LOG.info("> " + s.toUpperCase());
-						out.println("\nWhat computation do you want ?");
-						out.flush();
+						out.println(line + " = " + result);
+						// pour permettre que le message s'affiche en premier
+						beginMessage();
 					}
 
 					LOG.info("Cleaning up resources...");
