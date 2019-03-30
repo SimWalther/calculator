@@ -1,13 +1,13 @@
-><#####What transport protocol do we use?
+#####What transport protocol do we use?
 We will use TCP/IP
 
-#####How does the client find the server (addresses and ports)?
+##### How does the client find the server (addresses and ports)?
 IP private : 172.31.222.111
 
-Port number : 8094
+Port number : 2323
 
-#####Who speaks first?
-the client init the conversation
+##### Who speaks first?
+the client initiates the conversation
 
 #####What is the sequence of messages exchanged by the client and the server?
 (Client) : Hello
@@ -24,9 +24,7 @@ the client init the conversation
 close the connection.
 
 #####What is the syntax of the messages? How we generate and parse them?
-We use a XML syntax 
-
-The XML file is genera
+Plain calcul as 4 + 4 * 2
 
 #####Who closes the connection and when?
-The client close the connection (cmd : Exit)
+The client close the connection (cmd : bye)

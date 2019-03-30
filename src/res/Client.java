@@ -19,7 +19,6 @@ import java.util.logging.Logger;
  * @author Olivier Liechti
  */
 public class Client {
-
     final static Logger LOG = Logger.getLogger(Client.class.getName());
 
     Socket clientSocket;
@@ -82,7 +81,7 @@ public class Client {
         while(true) {
             String calcul = scanner.nextLine();
 
-            if(calcul == "bye") {
+            if(calcul.equals("bye")) {
                 disconnect();
                 break;
             }
