@@ -9,6 +9,8 @@ import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import sun.util.logging.resources.logging;
+
 /**
  * This class implements a multi-threaded TCP server. It is able to interact
  * with several clients at the time, as well as to continue listening for
@@ -130,30 +132,36 @@ public class MultiThreadedServer {
 							continue;
 						}
 						
-						float result = Float.parseFloat(strNumber[0]);
-						
-						for(int i = 1; i < strNumber.length; ++i) {
-						
-							switch(strOperation[i]) {
-							case "+":
-								result += Float.parseFloat(strNumber[i]);
-								break;
-							case "-":
-								result -= Float.parseFloat(strNumber[i]);
-								break;
-							case "*":
-								result *= Float.parseFloat(strNumber[i]);
-								break;
-							case "/":
-								result /= Float.parseFloat(strNumber[i]);
-								break;
-							default:
-								out.println("Seule les nombres et les caracteres suivants sont autorise [*/+-]");
-								break;
+						try 
+						{
+							float result = Float.parseFloat(strNumber[0]);
+							
+							for(int i = 1; i < strNumber.length; ++i) {
+							
+								switch(strOperation[i]) {
+								case "+":
+									result += Float.parseFloat(strNumber[i]);
+									break;
+								case "-":
+									result -= Float.parseFloat(strNumber[i]);
+									break;
+								case "*":
+									result *= Float.parseFloat(strNumber[i]);
+									break;
+								case "/":
+									result /= Float.parseFloat(strNumber[i]);
+									break;
+								default:
+									out.println("Seule les operateurs suivants sont autorise [*/+-]");
+									break;
+								}
 							}
+							
+							out.println(line + " = " + result);
+						} catch (NumberFormatException nfe) {
+							LOG.info("Erreur : " + nfe.getMessage());
+							out.println("Erreur interne");
 						}
-						
-						out.println(line + " = " + result);
 						// pour permettre que le message s'affiche en premier
 						beginMessage();
 					}

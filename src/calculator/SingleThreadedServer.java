@@ -62,12 +62,59 @@ public class SingleThreadedServer {
 				
 				out.println("Welcome to the Single-Threaded Server.\nSend me text lines and conclude with the BYE command.");
 				out.flush();
-				LOG.info("Reading until client sends BYE or closes the connection...");				
+				LOG.info("Reading until client sends BYE or closes the connection...");		
+				out.println("What computation do you want ?");
+				out.flush();
 				while ( (shouldRun) && (line = in.readLine()) != null ) {
 					if (line.equalsIgnoreCase("bye")) {
 						shouldRun = false;
+						continue;
 					}
-					out.println("> " + line.toUpperCase());
+
+					line = line.replace(" ", "");
+					
+			        String[] strNumber = line.split("[/*+-]"); 
+			        String[] strOperation = line.split("[0-9]");
+					
+					if(strNumber.length != strOperation.length) {
+						out.println("Seule les nombres et les caracteres suivants sont autorise [*/+-]");
+						out.println("What computation do you want ?");
+						out.flush();
+						continue;
+					}
+					
+					try 
+					{
+						float result = Float.parseFloat(strNumber[0]);
+						
+						for(int i = 1; i < strNumber.length; ++i) {
+						
+							switch(strOperation[i]) {
+							case "+":
+								result += Float.parseFloat(strNumber[i]);
+								break;
+							case "-":
+								result -= Float.parseFloat(strNumber[i]);
+								break;
+							case "*":
+								result *= Float.parseFloat(strNumber[i]);
+								break;
+							case "/":
+								result /= Float.parseFloat(strNumber[i]);
+								break;
+							default:
+								out.println("Seule les operateurs suivants sont autorise [*/+-]");
+								break;
+							}
+						}
+						
+						out.println(line + " = " + result);
+					} catch (NumberFormatException nfe) {
+						LOG.info("Erreur : " + nfe.getMessage());
+						out.println("Erreur interne");
+					}
+					// pour permettre que le message s'affiche en premier
+					out.println("What computation do you want ?");
 					out.flush();
 				}
 				

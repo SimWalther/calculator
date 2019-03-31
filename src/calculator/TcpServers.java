@@ -28,10 +28,10 @@ public class TcpServers {
 		System.setProperty("java.util.logging.SimpleFormatter.format", "%5$s %n");
 
 		MultiThreadedServer multi = new MultiThreadedServer(2323);
-		multi.serveClients();
+		//multi.serveClients();
 
 		SingleThreadedServer single = new SingleThreadedServer(2424);
-		//single.serveClients();
+		single.serveClients();
 	}
 
 }
